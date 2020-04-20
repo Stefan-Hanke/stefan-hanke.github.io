@@ -34,6 +34,8 @@ theme: minima
 # see https://github.com/jekyll/minima
 show_excerpts: true
 
+production_url: https://stefan-hanke.github.io/
+
 # required parameters for github pages
 # see https://help.github.com/en/github/working-with-github-pages/about-github-pages-and-jekyll
 lsi: false
