@@ -1,0 +1,66 @@
+---
+layout: post
+title:  "Pulumi"
+date:   2020-04-27
+categories: iac
+---
+
+[Pulumi](https://www.pulumi.com/) is *Infracstructure as Code* that actually *is* code. In this post I am describing my first steps using Pulumi and all dependency goodness that it brings.
+
+# Installation
+
+Since I did not do any development work personally for the last couple months (including a full reinstall), I had to install quite a bit of prerequisites for Pulumi to work. Since I have good experience using [chocolatey](https://chocolatey.org/), I've installed dependencies using it:
+
+> choco install nodejs awssdk nodejs python
+
+Pulumi itself is packaged as a choco package, so you can just run
+
+> choco install pulumi
+
+Pulumi needs access to your AWS account. There are two ways
+ - provide credentials directly to pulumi
+ - it can use credentials from AWS SDK.
+
+ I've chosen the later path, installed the [AWS SDK CLI](https://aws.amazon.com/de/cli/) and ran `aws configure` once.
+
+# On using Pulumi
+
+Pulumi needs to store state, just like e.g. Terraform. Pulumi requires you to login to *some* account. By default, it directs you to creating an online account, however the [FAQ](https://www.pulumi.com/docs/troubleshooting/faq/) mentions that you can store the state locally.
+
+> pulumi login --local
+
+# Pulumi Terminology
+
+## Project
+
+A [Pulumi Project](https://www.pulumi.com/docs/intro/concepts/project/) is a template of an actual infrastructure.
+
+## Stack
+
+A [Pulumi Stack](https://www.pulumi.com/docs/intro/concepts/stack/) represents an actual infrastructure with its separate configuration. There could be more than one stack for a given project.
+
+# First Steps
+
+I've followed along the lines of the [AWS Getting Started](https://www.pulumi.com/docs/get-started/aws/install-pulumi/). It runs you through
+
+ - creating an S3 Bucket,
+ - modify that bucket to use server-side encryption, and
+ - an finally destroy it.
+
+The command `pulumi new aws-typescript` creates a new Pulumi project in the current folder. Notice the template name - this creates a project using the `AWS` cloud provider and the `typescript` language.
+
+For more dependency fun, I had to install the `windows-build-tools` since of course some node dependencies needed node-gyp (see e.g. [this SO answer](https://stackoverflow.com/a/50561197/1262542)). After installing it, I noticed there are now `VS 2017 command prompts` available, though I did not install VS.
+
+> npm install --global --production windows-build-tools
+
+After that I pretty much just followed the tutorial. Some notable pulumi commands include:
+
+- `pulumi up` creates the infrastructure
+- `pulumi preview` shows what is to be changed
+- `pulumi destory` destroys it again.
+
+The stack itself is represented in its state file, located (in my example), at `file:///C:/Users/Stefan/.pulumi/stacks/dev.json`.
+
+# Next Steps
+
+The Pulumi homepage has some very nice [next step projects](https://www.pulumi.com/docs/get-started/aws/next-steps/), of which I'm certain I'll try a few ones.
