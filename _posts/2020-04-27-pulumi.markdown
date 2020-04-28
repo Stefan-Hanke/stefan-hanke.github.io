@@ -2,7 +2,7 @@
 layout: post
 title:  "Pulumi"
 date:   2020-04-27
-categories: iac
+categories: iac aws
 ---
 
 [Pulumi](https://www.pulumi.com/) is *Infracstructure as Code* that actually *is* code. In this post I am describing my first steps using Pulumi and all dependency goodness that it brings.
