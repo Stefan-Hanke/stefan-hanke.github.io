@@ -1,0 +1,155 @@
+---
+layout: post
+title:  "IdentityServer4 - Part One"
+date:   2020-05-02
+categories: identityserver c# openidconnect
+---
+
+In this and all following posts, I follow along the [quickstart example](https://identityserver4.readthedocs.io/en/latest/quickstarts/1_client_credentials.html) of the [IdentityServer project](https://github.com/IdentityServer/IdentityServer4).
+
+The IdentityServer4 (abbreviated **IS4** from now on) is a project that implements OpenID Connect and OAuth 2.0 frameworks. IS4 itself is a framework, and not some ready-to-use components that one just needs to spin up. It is implemented in C# and is ready-to-use in .Net Core.
+
+## Lift off using dotnet new templates
+
+IS4 guides makes it fortunately very simple to get startet with an OpenID Connect server. You run `dotnet new -i IdentityServer4.Templates`. This installs templates that are then shown as project templates. These include:
+
+IdentityServer4 with AdminUI                              | is4admin
+IdentityServer4 with ASP.NET Core Identity                | is4aspid
+IdentityServer4 Empty                                     | is4empty
+IdentityServer4 with Entity Framework Stores              | is4ef
+IdentityServer4 with In-Memory Stores and Test Users      | is4inmem
+IdentityServer4 Quickstart UI (UI assets only)            | is4uis
+
+The quickstart guide uses the `is4empty` template to create an empty IS4 server. This server alone cannot perform anything, you need to configure it using `ApiResource`s and `Client`s.
+
+## IS4 terminology
+
+### `ApiResource`
+
+It's kind of vague what an instance of `ApiResource` denotes. 
+The section about [Defining API resources](https://identityserver4.readthedocs.io/en/latest/topics/resources.html?highlight=apiresource#defining-api-resources) describes it with the words *To allow clients to request access tokens for APIs, you need to define API resource*.
+The [reference documentation](http://docs.identityserver.io/en/3.1.0/reference/api_resource.html) is likewise unassertive, with a mere *This class model an API resource.* as top-level documentation.
+The section about [Protecting APIs](http://docs.identityserver.io/en/3.1.0/topics/apis.html) shows where the API resource name is used. This is
+
+ - as `audience` in JWT Bearer Authentication
+
+```CSharp
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddMvc();
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                // base-address of your identityserver
+                options.Authority = "https://demo.identityserver.io";
+
+                // name of the API resource
+                options.Audience = "api1";
+            });
+    }
+```
+
+ - ss `ApiName` of the IS4 authentication handler (whatever that is)
+
+```CSharp
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddMvc();
+
+        services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+            .AddIdentityServerAuthentication(options =>
+            {
+                // base-address of your identityserver
+                options.Authority = "https://demo.identityserver.io";
+
+                // name of the API resource
+                options.ApiName = "api1";
+            });
+    }
+```
+
+`ApiResource` instances own `Scope`s, which define what parts of the API are covered in it.
+This could be used to e.g. model read/write or readonly access to an API.
+
+### `Client`
+
+For me, it's more obvious what Clients are; the [client topic reads](https://identityserver4.readthedocs.io/en/latest/topics/clients.html). Actually, I like the complete paragraph, nice and compact:
+
+> Clients represent applications that can request tokens from your identityserver.
+
+> The details vary, but you typically define the following common settings for a client:
+
+> - a unique client ID
+> - a secret if needed
+> - the allowed interactions with the token service (called a grant type)
+> - a network location where identity and/or access token gets sent to (called a redirect URI)
+> - a list of scopes (aka resources) the client is allowed to access
+
+## IS4 configuration
+
+Though the IS4 certainly allows to dynamically alter users, clients, and APIs, for me a reasonable default is to just hardcode what you are using. This is done in the quickstarts using the file `Config.cs`.
+
+```CSharp
+namespace IdentityServer
+{
+    public static class Config
+    {
+        public static IEnumerable<IdentityResource> Ids =>
+            new List<IdentityResource>
+            {
+                new IdentityResources.OpenId(),
+                new IdentityResources.Profile(),
+            };
+
+        public static IEnumerable<ApiResource> Apis =>
+            new ApiResource[]
+            {
+                new ApiResource("api1", "My API")
+            };
+
+
+        public static IEnumerable<Client> Clients =>
+            new List<Client>
+            {
+                // machine to machine client (from quickstart 1)
+                new Client
+                {
+                    ClientId = "client",
+                    ClientSecrets = { new Secret("secret".Sha256()) },
+
+                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    // scopes that client has access to
+                    AllowedScopes = { "api1" }
+                },
+                // interactive ASP.NET Core MVC client
+                new Client
+                {
+                    ClientId = "mvc",
+                    ClientSecrets = { new Secret("secret".Sha256()) },
+
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RequireConsent = false,
+                    RequirePkce = true,
+
+                    // where to redirect to after login
+                    RedirectUris = { "http://localhost:5002/signin-oidc" },
+
+                    // where to redirect to after logout
+                    PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
+
+                    AllowedScopes = new List<string>
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile
+                    }
+                }
+            };
+
+    }
+}
+```
+
+----
+
+Since this post is already too long, I'll continue with another post that reviews what I was doing when walking through the quickstart.
