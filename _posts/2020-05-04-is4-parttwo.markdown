@@ -1,0 +1,86 @@
+---
+layout: post
+title:  "IdentityServer4 - Part Two"
+date:   2020-05-04
+categories: identityserver c# openidconnect
+---
+
+Random Rumblings about playing around with the IdentityServer4.
+
+## OpenID Discovery Document
+
+https://openid.net/specs/openid-connect-discovery-1_0.html
+
+https://localhost:5001/.well-known/openid-configuration
+
+    {
+        "issuer": "https://localhost:5001",
+        "jwks_uri": "https://localhost:5001/.well-known/openid-configuration/jwks",
+        "authorization_endpoint": "https://localhost:5001/connect/authorize",
+        "token_endpoint": "https://localhost:5001/connect/token",
+        "userinfo_endpoint": "https://localhost:5001/connect/userinfo",
+        "end_session_endpoint": "https://localhost:5001/connect/endsession",
+        "check_session_iframe": "https://localhost:5001/connect/checksession",
+        "revocation_endpoint": "https://localhost:5001/connect/revocation",
+        "introspection_endpoint": "https://localhost:5001/connect/introspect",
+        "device_authorization_endpoint": "https://localhost:5001/connect/deviceauthorization",
+        "frontchannel_logout_supported": true,
+        "frontchannel_logout_session_supported": true,
+        "backchannel_logout_supported": true,
+        "backchannel_logout_session_supported": true,
+        "scopes_supported": [
+            "openid",
+            "api1",
+            "offline_access"
+        ],
+        "claims_supported": [
+            "sub"
+        ],
+        "grant_types_supported": [
+            "authorization_code",
+            "client_credentials",
+            "refresh_token",
+            "implicit",
+            "urn:ietf:params:oauth:grant-type:device_code"
+        ],
+        "response_types_supported": [
+            "code",
+            "token",
+            "id_token",
+            "id_token token",
+            "code id_token",
+            "code token",
+            "code id_token token"
+        ],
+        "response_modes_supported": [
+            "form_post",
+            "query",
+            "fragment"
+        ],
+        "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post"
+        ],
+        "id_token_signing_alg_values_supported": [
+            "RS256"
+        ],
+        "subject_types_supported": [
+            "public"
+        ],
+        "code_challenge_methods_supported": [
+            "plain",
+            "S256"
+        ],
+        "request_parameter_supported": true
+    }
+
+## Other stuff
+
+ - Problems with Chrome requiring HTTPS - endless redirect loop. Using Firefox + straight HTTP works.
+ - [Look here](https://identityserver4.readthedocs.io/en/latest/quickstarts/2_interactive_aspnetcore.html) for further experiments
+ - [Proof Key for Code Exchange](https://tools.ietf.org/html/rfc7636)
+    OAuth 2.0 public clients utilizing the Authorization Code Grant are
+    susceptible to the authorization code interception attack.  This
+    specification describes the attack as well as a technique to mitigate
+    against the threat through the use of Proof Key for Code Exchange
+    (PKCE, pronounced "pixy").
