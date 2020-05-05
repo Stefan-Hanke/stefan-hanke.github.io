@@ -69,4 +69,6 @@ I wondered what the post header that is required in Jekyll posts means.
     categories: VuePress documentation
     ---
 
-https://vuepress.vuejs.org/guide/markdown.html#frontmatter
+It turns out this is interpreted by [Frontmatter](https://vuepress.vuejs.org/guide/markdown.html#frontmatter). VuePress uses a project called [gray-matter](https://github.com/jonschlinkert/gray-matter) for parsing front matter.
+
+In the end, these variables represent *metadata* that now can be used inside a post, or from the outside, to e.g. build up indices.
