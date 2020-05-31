@@ -1,0 +1,88 @@
+---
+layout: post
+title:  "gRPC"
+date:   2020-05-30
+categories: grpc dnc
+---
+
+In this post, I'll summarize my experiences in using gRPC in a small example application.
+
+The [gRPC homepage](https://grpc.io/) states:
+
+> 
+gRPC is a modern open source high performance RPC framework that can run in any environment. It can efficiently connect services in and across data centers with pluggable support for load balancing, tracing, health checking and authentication. It is also applicable in last mile of distributed computing to connect devices, mobile applications and browsers to backend services.
+
+Now that is quite a mouthful. I've always thought of gRPC of being a data format, where the messages are *typed* using a yaml-based description. Seems like there is a ton of features built on top of it nowadays.
+
+---
+---
+---
+
+Fortunately, there is a [Quick Start in C#](https://grpc.io/docs/languages/csharp/quickstart/), so let me jump right into it.
+
+Unfortunately, this tutorial is not really from the ground up, instead they require you to clone the whole repository and view some project inside the `examples/csharp` folder. I've copied the relevant projects to a newly created repository and started from there. The only other file was `helloworld.proto`, which actually contains the message definitions and was shared between all examples.
+
+I'm editing the files uding the `VS Code` editor, and already created a code-workspace for all csharp projects and the proto file. For the latter, there's an extension called `vscode-proto3` - frankly, I don't know what features this extension offers, but I'm happily take anything beyond syntax highlighting.
+
+---
+---
+---
+
+The `helloworld.proto` contains the description of the messages and methods that are to be provided by a server.
+
+```grpc
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.helloworld";
+option java_outer_classname = "HelloWorldProto";
+option objc_class_prefix = "HLW";
+
+package helloworld;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}
+```
+
+One immediately notices the java specific options. In the examples, the proto files are shared between all language examples - so these can safely be dropped for csharp.
+
+The NuGet package `Grpc.Tools` creates static types from `proto` files that are marked as such - the csproj file contains
+
+```xml
+<ItemGroup>
+    <Protobuf Include="helloworld.proto" Link="helloworld.proto" />
+</ItemGroup>
+```
+
+Types that are created:
+
+ - `Greeter.GreeterClient` - gRPC client code
+ - `Greeter.GreeterBase` - base class for the server
+ - `HelloRequest` - The HelloRequest message
+ - `HelloReply` - The helloReply message
+
+
+---
+---
+---
+
+The [page on core concepts](https://grpc.io/docs/what-is-grpc/core-concepts/) contains numerous interesting facts about gRPC:
+
+- Support for streaming of messages
+- Authentication
+- sync/async API
+
+Actually, I did not realize that `.proto` files actually are [protobuf](https://doc.akka.io/docs/akka-grpc/current/proto.html) files. I did not find any reference on how to change a gRPC message - it's because it's in the [protobuf documentation](https://developers.google.com/protocol-buffers/docs/proto#updating). These rules are non-trivial, but it's always possible to add to a given protobuf definition to retain backward compatibility.
